@@ -95,7 +95,7 @@
         <form id="get-posts-form">
           <input id="get-page" type="number" placeholder="page (선택)">
           <input id="get-pageSize" type="number" placeholder="pageSize (선택)">
-          <input id="get-keyword" type="text" placeholder="검색어 (선택)">
+          <input id="get-keyword" type="text" placeholder="keyword (선택)">
           <button type="submit">전체 목록 조회</button>
         </form>
       </section>
@@ -114,7 +114,7 @@
         <h2>PATCH /posts/:id</h2>
         <form id="patch-post-form">
           <input id="patch-id" name="id" placeholder="ID (필수)" required>
-          <input name="password" placeholder="비밀번호 (필수)" required>
+          <input name="password" placeholder="비밀번호">
           <input name="writer" placeholder="작성자 (선택)">
           <input name="tags" placeholder="태그 (선택)">
           <select name="size">
@@ -137,7 +137,7 @@
         <h2>DELETE /posts/:id</h2>
         <form id="delete-post-form">
           <input id="delete-id" type="number" placeholder="ID (필수)" required>
-          <input id="delete-password" placeholder="비밀번호 (필수)" required>
+          <input id="delete-password" placeholder="비밀번호">
           <button type="submit">삭제 요청</button>
         </form>
       </section>

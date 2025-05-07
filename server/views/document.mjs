@@ -63,7 +63,7 @@ document.getElementById('patch-post-form').addEventListener('submit', async (e) 
   const form = new FormData(e.target);
   const id = form.get('id');
   const password = form.get('password');
-  if (!id || !password) return showResult({ error: 'id와 password는 필수입니다.' });
+  if (!id) return showResult({ error: 'id는 필수입니다.' });
 
   const body = Object.fromEntries(form);
   body.tags = body.tags?.split(',').map(tag => tag.trim());
@@ -83,7 +83,7 @@ document.getElementById('delete-post-form').addEventListener('submit', async (e)
   e.preventDefault();
   const id = document.getElementById('delete-id').value;
   const password = document.getElementById('delete-password').value;
-  if (!id || !password) return showResult({ error: 'id와 password는 필수입니다.' });
+  if (!id) return showResult({ error: 'id는 필수입니다.' });
 
   try {
     const res = await axios.delete(`/posts/${id}?password=${encodeURIComponent(password)}`);

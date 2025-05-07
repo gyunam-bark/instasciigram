@@ -3,7 +3,6 @@ import PostRoutes from './routes/post-routes.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import Pixel from './models/pixel.mjs'
 
 export default class Server {
   static #DEFAULT_PORT = 3000
@@ -28,9 +27,9 @@ export default class Server {
     })
 
     // create post
-    this.#server.post('/posts', (req, res) => {
+    this.#server.post('/posts', async (req, res) => {
       try {
-        const post = PostRoutes.createPost(req.body)
+        const post = await PostRoutes.createPost(req.body)
 
         res.status(201).json(post)
       } catch (error) {
@@ -39,11 +38,11 @@ export default class Server {
     })
 
     // get posts
-    this.#server.get('/posts', (req, res) => {
+    this.#server.get('/posts', async (req, res) => {
       try {
         const { page = 1, pageSize = 10, keyword = '' } = req.query
 
-        const result = PostRoutes.getPosts({
+        const result = await PostRoutes.getPosts({
           page: Number(page),
           pageSize: Number(pageSize),
           keyword
@@ -56,10 +55,10 @@ export default class Server {
     })
 
     // get post
-    this.#server.get('/posts/:id', (req, res) => {
+    this.#server.get('/posts/:id', async (req, res) => {
       try {
         const { id } = req.params
-        const result = PostRoutes.getPost({ id: Number(id) })
+        const result = await PostRoutes.getPost({ id: Number(id) })
 
         res.status(200).json(result)
       } catch (error) {
@@ -68,15 +67,16 @@ export default class Server {
     })
 
     // update post
-    this.#server.patch('/posts/:id', (req, res) => {
+    this.#server.patch('/posts/:id', async (req, res) => {
       try {
         const { id } = req.params
         const { password = '', ...fields } = req.body
+        console.log(req.body)
 
-        const result = PostRoutes.updatePost({
+        const result = await PostRoutes.updatePost({
           ...fields,
           id: Number(id),
-          password
+          password: password
         })
 
         res.status(200).json(result)
@@ -86,11 +86,11 @@ export default class Server {
     })
 
     // delete
-    this.#server.delete('/posts/:id', (req, res) => {
+    this.#server.delete('/posts/:id', async (req, res) => {
       try {
         const { id } = req.params
         const { password = '' } = req.query
-        const result = PostRoutes.deletePost({
+        const result = await PostRoutes.deletePost({
           id: Number(id),
           password
         })
