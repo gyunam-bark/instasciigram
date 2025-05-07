@@ -6,32 +6,38 @@ export default class Database {
 
   static getPosts(schemes = {}) {
     const { page = 1, pageSize = 10, keyword = '' } = schemes
-    const loweredKeyword = keyword.toLowerCase()
+
     const all = Array.from(this.#posts.values())
+    const loweredKeyword = keyword.toLowerCase()
+
     let filtered = []
 
-    if (keyword.trim().length > 0) {
-      filtered = all.filter(
-        post => {
-          const { title, writer, tags } = post.toJSON()
-          const isKeywordInTitle = title.toLowerCase().includes(loweredKeyword)
-          const isKeywordInWriter = writer.toLowerCase().includes(loweredKeyword)
-          const isKeywordInTags = tags.some(tag => tag.toLowerCase().includes(loweredKeyword))
-          return (
-            isKeywordInTitle ||
-            isKeywordInWriter ||
-            isKeywordInTags
-          )
-        })
+    if (loweredKeyword !== '' && loweredKeyword.length > 0) {
+      filtered = all.filter(post => {
+        const { title, writer, tags } = post.toJSON()
+        return (
+          title.toLowerCase().includes(loweredKeyword) ||
+          writer.toLowerCase().includes(loweredKeyword) ||
+          tags.some(tag => tag.toLowerCase().includes(loweredKeyword))
+        )
+      })
     } else {
       filtered = all
     }
 
-    const start = page * pageSize
+    const start = (page - 1) * pageSize
     const end = start + pageSize
-    const filteredPage = pageSize > 0 ? filtered.slice(start, end) : filtered
 
-    return filteredPage.map(post => post.toJSON())
+    if (filtered.length <= pageSize && page === 1) {
+      return filtered.map(post => post.toJSON());
+    }
+
+    if (start >= filtered.length) {
+      return [];
+    }
+
+    const filteredPage = filtered.slice(start, end);
+    return filteredPage.map(post => post.toJSON());
   }
 
   static getPost(id = 0) {
