@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>instasciigram</title>
+  <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+  <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    form {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      background: #f2f2f2;
+      margin-bottom: 2rem;
+    }
+
+    .post {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #f9f9f9;
+    }
+
+    .ascii-art {
+      font-family: monospace;
+      white-space: pre;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    #status {
+      color: green;
+      margin-bottom: 1rem;
+    }
+
+    .error {
+      color: red;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>instasciigram</h1>
+
+  <div class="wrapper">
+    <div id="status"></div>
+
+    <form hx-post="/posts" hx-target="#posts" hx-swap="beforeend" _="on submit 
+            log 'Post submitted' 
+            then reset() 
+            then put 'Post created!' into #status.innerText 
+            then wait 2s 
+            then put '' into #status.innerText">
+
+      <h2>Create Post</h2>
+
+      <input name="title" placeholder="Title" /><br />
+      <input name="writer" placeholder="Writer" /><br />
+      <input name="tags" placeholder="Comma-separated tags (e.g. ascii,art)" /><br />
+      <input type="number" name="size" value="2" min="1" max="64" /><br />
+      <textarea name="pixels" placeholder="Comma-separated HEX pixels" rows="3" required></textarea><br />
+
+      <button type="submit">Create Post</button>
+    </form>
+
+    <h2>Posts</h2>
+    <div id="posts" hx-get="/posts" hx-trigger="load" hx-swap="innerHTML">
+    </div>
+  </div>
+
+</body>
+
+</html>
