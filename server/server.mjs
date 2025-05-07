@@ -3,7 +3,6 @@ import PostRoutes from './routes/post-routes.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import Render from './utils/render.mjs'
 
 export default class Server {
   static #DEFAULT_PORT = 3000
@@ -18,7 +17,7 @@ export default class Server {
     this.#server.use(express.static(path.resolve(this.#__DIRNAME, './views')))
 
     // home
-    this.#server.get('/', this.sendIndexPageFile)
+    this.#server.get('/', this.sendApiDocument)
 
     // post
     this.#server.post('/posts', (req, res) => {
@@ -32,39 +31,15 @@ export default class Server {
           pixels = ''
         } = req.body
 
-        const tagsArray = Array.isArray(tags)
-          ? tags
-          : typeof tags === 'string'
-            ? tags.split(',').map(t => t.trim()).filter(Boolean)
-            : []
-
-        const pixelsArray = Array.isArray(pixels)
-          ? pixels
-          : typeof pixels === 'string'
-            ? pixels.split(',').map(p => p.trim()).filter(Boolean)
-            : []
-
         const post = PostRoutes.createPost({
           title,
           writer,
           password,
-          tags: tagsArray,
+          tags: tags,
           size: Number(size),
-          pixels: pixelsArray
+          pixels: pixels
         })
-
-        const art = Render.pixelsToColoredHtmlCode(post.pixels, post.size)
-
-        const html = `
-          <div class="post">
-            <h3>${post.title}</h3>
-            <p>by ${post.writer}</p>
-            <p><strong>Tags:</strong> ${post.tags.join(', ')}</p>
-            <p><strong>Size:</strong> ${post.size}</p>
-            <div style=" white-space: pre; text-align:center; font-size:2rem; line-height:1; letter-spacing: 0;">${art}</div>
-          </div>
-        `
-        res.status(201).send(html)
+        res.status(201).json(post)
       } catch (error) {
         res.status(400).json({ error: error.message })
       }
@@ -72,21 +47,9 @@ export default class Server {
 
     this.#server.get('/posts', (req, res) => {
       try {
-        const result = PostRoutes.getPosts(req.query)
-        const html = result.map(post => {
-          const art = Render.pixelsToColoredHtmlCode(post.pixels, post.size)
+        const result = PostRoutes.getPosts(req.body)
 
-          return `
-          <div class="post">
-            <h3>${post.title}</h3>
-            <p>by ${post.writer}</p>
-            <p><strong>Tags:</strong> ${post.tags.join(', ')}</p>
-            <p><strong>Size:</strong> ${post.size}</p>
-            <div style=" white-space: pre; text-align:center; font-size:2rem; line-height:1; letter-spacing: 0;">${art}</div>
-          </div>
-        `}).join('')
-
-        res.status(200).send(html)
+        res.status(200).json(result)
       } catch (error) {
         res.status(400).json({ error: error.message })
       }
@@ -97,7 +60,7 @@ export default class Server {
     })
   }
 
-  static sendIndexPageFile(req, res) {
+  static sendApiDocument(req, res) {
     try {
       res.sendFile(path.resolve(this.#__DIRNAME, './views/index.html'))
     } catch (error) {
