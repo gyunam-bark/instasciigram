@@ -100,59 +100,6 @@ export default class Server {
       }
     })
 
-    this.#server.get('/render/:id', (req, res) => {
-      const { id } = req.params
-      const result = PostRoutes.getPost({ id: Number(id) })
-      const { title, writer, size, pixels } = result
-
-      let asciiHtml = ''
-
-      for (let i = 0; i < pixels.length; i++) {
-        const pixel = Pixel.fromHex(pixels[i])
-
-        asciiHtml += `<span style="color: rgb(${pixel.red}, ${pixel.green}, ${pixel.blue})">${pixel.ascii}</span>`
-        if ((i + 1) % size === 0) asciiHtml += '<br>'
-      }
-
-      const html = `
-      <!DOCTYPE html>
-      <html lang="ko">
-      <head>
-        <meta charset="UTF-8" />
-        <title>${title} - ASCII Art</title>
-        <style>
-          body {
-            margin: 0;
-            height: 100vh;
-            background: #fff;
-            color: #000;
-            font-family: monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-          .ascii {
-            text-align: center;
-            font-size: 12px;
-            line-height: 1.1;
-            white-space: pre;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="ascii">
-          <h2 style="color:black">${title} by ${writer}</h2>
-          <div style="border-width:1px; border-style:solid; border-color:#000;">
-          ${asciiHtml}
-          </div>
-        </div>
-      </body>
-      </html>
-          `
-
-      res.send(html.trim())
-    })
-
     this.#server.listen(port, () => {
       console.log(`server running at http://localhost:${port}`)
     })
