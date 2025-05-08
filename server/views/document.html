@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -70,12 +70,12 @@
       <section>
         <h2>POST /posts</h2>
         <form id="create-post-form">
-          <input name="title" placeholder="제목">
-          <input name="writer" placeholder="작성자">
-          <input name="password" placeholder="비밀번호">
-          <input name="tags" placeholder="태그 (쉼표로 구분)">
+          <input name="title" placeholder="title">
+          <input name="writer" placeholder="writer">
+          <input name="password" placeholder="password (required)" required>
+          <input name="tags" placeholder="tag (seperated by commas, optional)">
           <select name="size" required>
-            <option value="">사이즈 선택</option>
+            <option value="">choose size</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="4">4</option>
@@ -85,7 +85,7 @@
             <option value="64">64</option>
           </select>
           <textarea name="pixels" placeholder='["FFFFFFFF", "FF0000FF"]' required></textarea>
-          <button type="submit">생성 요청</button>
+          <button type="submit">create one request</button>
         </form>
       </section>
 
@@ -93,10 +93,10 @@
       <section>
         <h2>GET /posts</h2>
         <form id="get-posts-form">
-          <input id="get-page" type="number" placeholder="page (선택)">
-          <input id="get-pageSize" type="number" placeholder="pageSize (선택)">
-          <input id="get-keyword" type="text" placeholder="keyword (선택)">
-          <button type="submit">전체 목록 조회</button>
+          <input id="get-page" type="number" placeholder="page (optional)">
+          <input id="get-pageSize" type="number" placeholder="pageSize (optional)">
+          <input id="get-keyword" type="text" placeholder="keyword (optional)">
+          <button type="submit">get list request</button>
         </form>
       </section>
 
@@ -104,8 +104,8 @@
       <section>
         <h2>GET /posts/:id</h2>
         <form id="get-post-form">
-          <input id="get-id" type="number" placeholder="ID (필수)" required>
-          <button type="submit">조회</button>
+          <input id="get-id" type="number" placeholder="id (required)" required>
+          <button type="submit">get one request</button>
         </form>
       </section>
 
@@ -113,12 +113,12 @@
       <section>
         <h2>PATCH /posts/:id</h2>
         <form id="patch-post-form">
-          <input id="patch-id" name="id" placeholder="ID (필수)" required>
-          <input name="password" placeholder="비밀번호">
-          <input name="writer" placeholder="작성자 (선택)">
-          <input name="tags" placeholder="태그 (선택)">
+          <input id="patch-id" name="id" placeholder="id (required)" required>
+          <input name="password" placeholder="password (required)" required>
+          <input name="writer" placeholder="wrtier (optional)">
+          <input name="tags" placeholder="tags (seperated by commas, optional)">
           <select name="size">
-            <option value="">사이즈 선택</option>
+            <option value="">choose size</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="4">4</option>
@@ -127,8 +127,8 @@
             <option value="32">32</option>
             <option value="64">64</option>
           </select>
-          <textarea name="pixels" placeholder="픽셀값 (선택)"></textarea>
-          <button type="submit">수정 요청</button>
+          <textarea name="pixels" placeholder='["FFFFFFFF", "FF0000FF" ]'></textarea>
+          <button type="submit">patch one request</button>
         </form>
       </section>
 
@@ -136,17 +136,17 @@
       <section>
         <h2>DELETE /posts/:id</h2>
         <form id="delete-post-form">
-          <input id="delete-id" type="number" placeholder="ID (필수)" required>
-          <input id="delete-password" placeholder="비밀번호">
-          <button type="submit">삭제 요청</button>
+          <input id="delete-id" type="number" placeholder="id (required)" required>
+          <input id="delete-password" placeholder="password (required) required">
+          <button type="submit">delete one request</button>
         </form>
       </section>
 
     </div>
 
     <div class="right">
-      <h2>응답 결과</h2>
-      <div id="result" class="result">응답이 여기에 표시됩니다.</div>
+      <h2>response</h2>
+      <div id="result" class="result">the response will appear here.</div>
     </div>
   </div>
 

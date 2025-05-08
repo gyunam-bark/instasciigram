@@ -3,16 +3,21 @@ import PostRoutes from './routes/post-routes.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import Database from './database.mjs'
+import dotenv from 'dotenv'
+dotenv.config()
 
 export default class Server {
-  static #DEFAULT_PORT = 3000
+  static #DEFAULT_PORT = process.env.PORT
 
   static #__FILENAME = fileURLToPath(import.meta.url)
   static #__DIRNAME = dirname(this.#__FILENAME)
 
   static #server = express()
 
-  static run(port = this.#DEFAULT_PORT) {
+  static async run(port = this.#DEFAULT_PORT) {
+    await Database.init()
+
     this.#server.use(express.urlencoded({ extended: true }))
     this.#server.use(express.json())
     this.#server.use(express.static(path.resolve(this.#__DIRNAME, './views')))
@@ -71,7 +76,6 @@ export default class Server {
       try {
         const { id } = req.params
         const { password = '', ...fields } = req.body
-        console.log(req.body)
 
         const result = await PostRoutes.updatePost({
           ...fields,

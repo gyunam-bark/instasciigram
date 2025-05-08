@@ -1,109 +1,136 @@
-import Post from './models/post.mjs'
+import pg from 'pg'
+import dotenv from 'dotenv'
+dotenv.config()
+
+const { Pool } = pg
 
 export default class Database {
-  static #posts = new Map()
-  static #id = 1
+  static #pool = null
 
-  static async getPosts(schemes = {}) {
-    const { page = 1, pageSize = 10, keyword = '' } = schemes
-
-    const all = Array.from(this.#posts.values())
-    const loweredKeyword = keyword.toLowerCase()
-
-    let filtered = []
-
-    if (loweredKeyword !== '' && loweredKeyword.length > 0) {
-      filtered = all.filter(post => {
-        const { title, writer, tags } = post.toJSON()
-        return (
-          title.toLowerCase().includes(loweredKeyword) ||
-          writer.toLowerCase().includes(loweredKeyword) ||
-          tags.some(tag => tag.toLowerCase().includes(loweredKeyword))
-        )
+  static async init() {
+    if (!this.#pool) {
+      this.#pool = new Pool({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
       })
-    } else {
-      filtered = all
+
+      const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS posts (
+          id SERIAL PRIMARY KEY,
+          title TEXT NOT NULL,
+          writer TEXT NOT NULL,
+          password TEXT NOT NULL,
+          tags TEXT[] DEFAULT '{}',
+          size INTEGER NOT NULL,
+          pixels TEXT[] DEFAULT '{}',
+          created_at TIMESTAMP NOT NULL,
+          updated_at TIMESTAMP NOT NULL
+        )
+      `
+      await this.#pool.query(createTableQuery)
+      console.log('postgresql connect success and posts table ready to serve.')
     }
+  }
 
-    const start = (page - 1) * pageSize
-    const end = start + pageSize
-
-    if (filtered.length <= pageSize && page === 1) {
-      return filtered.map(post => post.toJSON())
+  static get pool() {
+    if (!this.#pool) {
+      throw new Error('postgresql database not initialized. call Database.init() first.')
     }
+    return this.#pool
+  }
 
-    if (start >= filtered.length) {
-      return []
-    }
+  static async getPosts({ page = 1, pageSize = 10, keyword = '' } = {}) {
+    const offset = (page - 1) * pageSize
+    const loweredKeyword = `%${keyword.toLowerCase()}%`
 
-    const filteredPage = filtered.slice(start, end)
-    return filteredPage.map(post => post.toJSON())
+    const query = keyword.trim()
+      ? `SELECT * FROM posts
+         WHERE LOWER(title) LIKE $1 OR LOWER(writer) LIKE $1 OR EXISTS (
+           SELECT 1 FROM unnest(tags) tag WHERE LOWER(tag) LIKE $1
+         )
+         ORDER BY created_at DESC
+         LIMIT $2 OFFSET $3`
+      : `SELECT * FROM posts
+         ORDER BY created_at DESC
+         LIMIT $1 OFFSET $2`
+
+    const values = keyword.trim()
+      ? [loweredKeyword, pageSize, offset]
+      : [pageSize, offset]
+
+    const { rows } = await this.pool.query(query, values)
+    return rows
   }
 
   static async getPost(id = 0) {
-    const post = this.#posts.get(id)
-    return post ? post.toJSON() : { status: 404, id: id, error: 'post not found' }
+    const { rows } = await this.pool.query('SELECT * FROM posts WHERE id = $1', [id])
+    if (rows.length === 0) {
+      return { status: 404, id, error: 'post not found' }
+    }
+    return rows[0]
   }
 
   static async deletePost(id = 0, password = '') {
-    const post = this.#posts.get(id)
-    if (post === undefined) { return { status: 404, id: id, error: 'post not found' } }
-    if (post.password !== password) { return { status: 401, id: id, error: 'incorrect password' } }
-
-    this.#posts.delete(id)
-    return { id: id }
-  }
-
-  static async createPost(schemes = {}) {
-    const { title = '', writer = '', password = '', tags = [], size = 0, pixels = [] } = schemes
-    const id = this.#id++
-    const now = new Date().toISOString()
-    const post = new Post({
-      id: id,
-      title: title.trim().length > 0 ? title : 'untitled',
-      writer: writer.trim().length > 0 ? writer : 'anonymouse',
-      password: password,
-      tags: tags,
-      size: size,
-      pixels: pixels,
-      createdAt: now,
-      updatedAt: now,
-    })
-
-    this.#posts.set(id, post)
-
-    return post.toJSON()
-  }
-
-  static async updatePost(id = 0, password = '', schemes = {}) {
-    const post = this.#posts.get(id)
-    if (post === undefined) {
-      return { status: 404, id: id, error: 'post not found' }
-    }
+    const post = await this.getPost(id)
+    if (post.status === 404) return post
     if (post.password !== password) {
-      return { status: 401, id: id, error: 'incorrect password' }
+      return { status: 401, id, error: 'incorrect password' }
     }
 
-    const {
-      title = '',
-      writer = '',
-      tags = [],
-      size = 0,
-      pixels = []
-    } = schemes
+    await this.pool.query('DELETE FROM posts WHERE id = $1', [id])
+    return { id }
+  }
 
-    const updated = post.toJSON()
+  static async createPost({
+    title = '', writer = '', password = '', tags = [],
+    size = 0, pixels = []
+  } = {}) {
+    const now = new Date().toISOString()
+    const result = await this.pool.query(
+      `INSERT INTO posts (title, writer, password, tags, size, pixels, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [
+        title.trim() || 'untitled',
+        writer.trim() || 'anonymous',
+        password,
+        tags,
+        size,
+        pixels,
+        now,
+        now
+      ]
+    )
+    return result.rows[0]
+  }
 
-    updated.title = title.trim().length > 0 ? title : updated.title
-    updated.writer = writer.trim().length > 0 ? writer : updated.writer
-    updated.tags = tags.length > 0 ? tags : updated.tags
-    updated.size = size || updated.size
-    updated.pixels = pixels.length > 0 ? pixels : updated.pixels
-    updated.updatedAt = new Date().toISOString()
+  static async updatePost(id = 0, password = '', {
+    title = '', writer = '', tags = [], size = 0, pixels = []
+  } = {}) {
+    const post = await this.getPost(id)
+    if (post.status === 404) return post
+    if (post.password !== password) {
+      return { status: 401, id, error: 'incorrect password' }
+    }
 
-    const updatedPost = new Post(updated)
-    this.#posts.set(id, updatedPost)
+    const updated = {
+      title: title.trim() || post.title,
+      writer: writer.trim() || post.writer,
+      tags: tags.length ? tags : post.tags,
+      size: size || post.size,
+      pixels: pixels.length ? pixels : post.pixels,
+      updatedAt: new Date().toISOString()
+    }
 
-    return updatedPost.toJSON()
+    const result = await this.pool.query(
+      `UPDATE posts SET title = $1, writer = $2, tags = $3, size = $4, pixels = $5, updated_at = $6
+       WHERE id = $7 RETURNING *`,
+      [updated.title, updated.writer, updated.tags, updated.size, updated.pixels, updated.updatedAt, id]
+    )
+
+    return result.rows[0]
   }
 }

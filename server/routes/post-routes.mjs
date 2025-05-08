@@ -33,9 +33,9 @@ export default class PostRoutes {
     }
   }
 
-  static async deletePost({ id = 0 }) {
+  static async deletePost({ id = 0, password = '' }) {
     try {
-      return await Database.deletePost(id)
+      return await Database.deletePost(id, password)
     } catch (error) {
       throw new Error(`delete post failed: ${error.message}`)
     }
