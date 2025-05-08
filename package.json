@@ -1,0 +1,29 @@
+{
+  "name": "instasciigram",
+  "version": "1.0.0",
+  "description": "ㅁ deprecated version of instagram that only allows you to upload and share square-sized ascii art.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.mjs",
+    "start": "node index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gyunam-bark/instasciigram.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gyunam-bark/instasciigram/issues"
+  },
+  "homepage": "https://github.com/gyunam-bark/instasciigram#readme",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "pg": "^8.15.6"
+  }
+}

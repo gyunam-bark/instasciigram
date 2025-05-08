@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>instascii api test document</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script type="module" src="./document.mjs"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .layout {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .left {
+      flex: 1 1 55%;
+      min-width: 300px;
+    }
+
+    .right {
+      flex: 1 1 40%;
+      min-width: 260px;
+      max-height: 100vh;
+      overflow-y: auto;
+      position: sticky;
+      top: 2rem;
+    }
+
+    section {
+      margin-bottom: 2rem;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+    }
+
+    .result {
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>api test tool (axios)</h1>
+
+  <div class="layout">
+    <div class="left">
+
+      <!-- POST -->
+      <section>
+        <h2>POST /posts</h2>
+        <form id="create-post-form">
+          <input name="title" placeholder="title">
+          <input name="writer" placeholder="writer">
+          <input name="password" placeholder="password (required)" required>
+          <input name="tags" placeholder="tag (seperated by commas, optional)">
+          <select name="size" required>
+            <option value="">choose size</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="16">16</option>
+            <option value="32">32</option>
+            <option value="64">64</option>
+          </select>
+          <textarea name="pixels" placeholder='["FFFFFFFF", "FF0000FF"]' required></textarea>
+          <button type="submit">create one request</button>
+        </form>
+      </section>
+
+      <!-- GET /posts -->
+      <section>
+        <h2>GET /posts</h2>
+        <form id="get-posts-form">
+          <input id="get-page" type="number" placeholder="page (optional)">
+          <input id="get-pageSize" type="number" placeholder="pageSize (optional)">
+          <input id="get-keyword" type="text" placeholder="keyword (optional)">
+          <button type="submit">get list request</button>
+        </form>
+      </section>
+
+      <!-- GET /posts/:id -->
+      <section>
+        <h2>GET /posts/:id</h2>
+        <form id="get-post-form">
+          <input id="get-id" type="number" placeholder="id (required)" required>
+          <button type="submit">get one request</button>
+        </form>
+      </section>
+
+      <!-- PATCH /posts/:id -->
+      <section>
+        <h2>PATCH /posts/:id</h2>
+        <form id="patch-post-form">
+          <input id="patch-id" name="id" placeholder="id (required)" required>
+          <input name="password" placeholder="password (required)" required>
+          <input name="writer" placeholder="wrtier (optional)">
+          <input name="tags" placeholder="tags (seperated by commas, optional)">
+          <select name="size">
+            <option value="">choose size</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="16">16</option>
+            <option value="32">32</option>
+            <option value="64">64</option>
+          </select>
+          <textarea name="pixels" placeholder='["FFFFFFFF", "FF0000FF" ]'></textarea>
+          <button type="submit">patch one request</button>
+        </form>
+      </section>
+
+      <!-- DELETE /posts/:id -->
+      <section>
+        <h2>DELETE /posts/:id</h2>
+        <form id="delete-post-form">
+          <input id="delete-id" type="number" placeholder="id (required)" required>
+          <input id="delete-password" placeholder="password (required) required">
+          <button type="submit">delete one request</button>
+        </form>
+      </section>
+
+    </div>
+
+    <div class="right">
+      <h2>response</h2>
+      <div id="result" class="result">the response will appear here.</div>
+    </div>
+  </div>
+
+</body>
+
+</html>
